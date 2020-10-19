@@ -87,6 +87,9 @@ pub fn from_term(term: &Term) -> surface::Term {
             vec![from_term(argument)], // TODO: flatten arguments
         ),
 
+        TermData::StructTerm(term_fields) => todo!("struct term"),
+        TermData::StructElim(head, field) => todo!("struct elimination"),
+
         TermData::Constant(constant) => match constant {
             Constant::Int(value) => surface::TermData::NumberLiteral(value.to_string()),
             Constant::F32(value) => surface::TermData::NumberLiteral(value.to_string()),

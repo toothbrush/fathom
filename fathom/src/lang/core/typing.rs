@@ -188,6 +188,9 @@ impl<'me> Context<'me> {
     pub fn check_type(&mut self, file_id: usize, term: &Term, expected_type: &Arc<Value>) {
         match (&term.data, expected_type.as_ref()) {
             (TermData::Error, _) | (_, Value::Error) => {}
+
+            (TermData::StructTerm(term_fields), _) => todo!("struct term"),
+
             (TermData::BoolElim(term, if_true, if_false), _) => {
                 let bool_type = Arc::new(Value::global("Bool"));
                 self.check_type(file_id, term, &bool_type);
@@ -202,6 +205,7 @@ impl<'me> Context<'me> {
                 }
                 self.check_type(file_id, default, expected_type);
             }
+
             (_, expected_type) => match self.synth_type(file_id, term) {
                 found_type if self.is_equal(&found_type, expected_type) => {}
                 found_type => self.push_message(CoreTypingMessage::TypeMismatch {
@@ -288,6 +292,9 @@ impl<'me> Context<'me> {
                     }
                 }
             }
+
+            TermData::StructTerm(term_fields) => todo!("struct term"),
+            TermData::StructElim(head, field) => todo!("struct elimination"),
 
             TermData::Constant(constant) => match constant {
                 // TODO: Lookup globals in environment

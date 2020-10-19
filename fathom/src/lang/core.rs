@@ -93,14 +93,6 @@ pub struct StructFormat {
     pub fields: Vec<TypeField>,
 }
 
-/// A field in a struct type definition.
-#[derive(Debug, Clone)]
-pub struct TypeField {
-    pub doc: Arc<[String]>,
-    pub name: String,
-    pub term: Arc<Term>,
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Sort {
     Type,
@@ -150,6 +142,11 @@ pub enum TermData {
     /// Function eliminations (function application).
     FunctionElim(Arc<Term>, Arc<Term>),
 
+    /// Struct terms.
+    StructTerm(Vec<TermField>),
+    /// Struct term eliminations (field lookup).
+    StructElim(Arc<Term>, String),
+
     /// Constants.
     Constant(Constant),
     /// A boolean elimination.
@@ -165,6 +162,21 @@ pub enum TermData {
 
     /// Error sentinel.
     Error,
+}
+
+/// A field in a struct type definition.
+#[derive(Debug, Clone)]
+pub struct TypeField {
+    pub doc: Arc<[String]>,
+    pub name: String,
+    pub term: Arc<Term>,
+}
+
+/// A field in a struct term.
+#[derive(Debug, Clone)]
+pub struct TermField {
+    pub name: Ranged<String>,
+    pub term: Term,
 }
 
 /// An environment of global definitions.

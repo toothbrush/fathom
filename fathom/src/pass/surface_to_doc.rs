@@ -250,6 +250,9 @@ impl Context {
             )
             .into(),
 
+            TermData::StructTerm(term_fields) => todo!("struct term"),
+            TermData::StructElim(head, field) => todo!("struct elimination"),
+
             TermData::NumberLiteral(literal) => format!("{}", literal).into(),
             TermData::If(head, if_true, if_false) => format!(
                 // TODO: multiline formatting!

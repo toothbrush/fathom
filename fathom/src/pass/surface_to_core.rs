@@ -560,6 +560,9 @@ impl<'me> Context<'me> {
                 (core_head, head_type)
             }
 
+            TermData::StructTerm(term_fields) => todo!("struct term"),
+            TermData::StructElim(head, field) => todo!("struct elimination"),
+
             TermData::NumberLiteral(_) => {
                 self.push_message(SurfaceToCoreMessage::AmbiguousNumericLiteral {
                     file_id,

@@ -70,6 +70,8 @@ pub enum Token<'source> {
     Equals,
     #[token("=>")]
     EqualsGreater,
+    #[token(".")]
+    FullStop,
     #[token("->")]
     HyphenGreater,
     #[token(";")]
@@ -118,6 +120,7 @@ impl<'source> fmt::Display for Token<'source> {
             Token::Comma => write!(f, ","),
             Token::Equals => write!(f, "="),
             Token::EqualsGreater => write!(f, "=>"),
+            Token::FullStop => write!(f, "."),
             Token::HyphenGreater => write!(f, "->"),
             Token::Semi => write!(f, ";"),
 

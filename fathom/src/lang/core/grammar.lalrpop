@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::lang::Ranged;
-use crate::lang::core::{Alias, Constant, ItemData, Module, Sort, StructType, StructFormat, Term, TermData, TypeField};
+use crate::lang::core::{Alias, Constant, ItemData, Module, Sort, StructType, StructFormat, Term, TermData, TermField, TypeField};
 use crate::lang::core::lexer::Token;
 use crate::literal;
 use crate::reporting::{LexerMessage, Message};
@@ -44,6 +44,7 @@ extern {
         "," => Token::Comma,
         "=" => Token::Equals,
         "=>" => Token::EqualsGreater,
+        "." => Token::FullStop,
         "->" => Token::HyphenGreater,
         ";" => Token::Semi,
     }
@@ -95,16 +96,6 @@ ItemData: ItemData = {
     },
 };
 
-TypeField: TypeField = {
-    <doc: "doc comment"*> <name: Name> ":" <term: Term> => {
-        TypeField {
-            doc: Arc::from(doc),
-            name,
-            term: Arc::new(term),
-        }
-    },
-};
-
 #[inline] Term: Term = Ranged<TermData>;
 #[inline] ArrowTerm: Term = Ranged<ArrowTermData>;
 #[inline] AppTerm: Term = Ranged<AppTermData>;
@@ -137,6 +128,11 @@ AtomicTermData: TermData = {
     "Type" => TermData::Sort(Sort::Type),
     "Kind" => TermData::Sort(Sort::Kind),
     "repr" => TermData::Repr,
+    "struct" "{" <mut fields: (<TermField> ",")*> <last: TermField?> "}" => {
+        fields.extend(last);
+        TermData::StructTerm(fields)
+    },
+    <term: AtomicTerm> "." <name: Name> => TermData::StructElim(Arc::new(term), name),
     "bool_elim" <head: Term> "{" <if_true: Term> "," <if_false: Term> "}" => {
         TermData::BoolElim(Arc::new(head), Arc::new(if_true), Arc::new(if_false))
     },
@@ -171,6 +167,22 @@ AtomicTermData: TermData = {
         }
     },
     "Format" => TermData::FormatType,
+};
+
+#[inline]
+TypeField: TypeField = {
+    <doc: "doc comment"*> <name: Name> ":" <term: Term> => {
+        TypeField {
+            doc: Arc::from(doc),
+            name,
+            term: Arc::new(term),
+        }
+    },
+};
+
+#[inline]
+TermField: TermField = {
+    <name: Ranged<Name>> "=" <term: Term> => TermField { name, term },
 };
 
 #[inline]

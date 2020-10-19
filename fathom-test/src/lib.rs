@@ -77,6 +77,7 @@ mod r#struct {
     test!(pass_empty_doc, "struct/pass_empty_doc.fathom");
     test!(pass_pair, "struct/pass_pair.fathom");
     test!(pass_singleton, "struct/pass_singleton.fathom");
+    test!(pass_term_and_elim, "struct/pass_term_and_elim.fathom");
     test!(pass_var, "struct/pass_var.fathom");
 
     test!(fail_duplicate_fields, "struct/fail_duplicate_fields.fathom");

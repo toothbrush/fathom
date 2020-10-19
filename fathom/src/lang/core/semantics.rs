@@ -117,6 +117,9 @@ pub fn eval(globals: &Globals, items: &HashMap<String, Item>, term: &Term) -> Ar
             apply_function_elim(head, argument)
         }
 
+        TermData::StructTerm(term_fields) => todo!("struct term"),
+        TermData::StructElim(head, field) => todo!("struct elimination"),
+
         TermData::Constant(constant) => Arc::new(Value::Constant(constant.clone())),
         TermData::BoolElim(head, if_true, if_false) => {
             let head = eval(globals, items, head);

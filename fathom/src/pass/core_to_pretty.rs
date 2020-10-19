@@ -282,6 +282,9 @@ where
                 ),
         ),
 
+        TermData::StructTerm(term_fields) => todo!("struct term"),
+        TermData::StructElim(head, field) => todo!("struct elimination"),
+
         TermData::Constant(constant) => from_constant(alloc, constant),
         TermData::BoolElim(head, if_true, if_false) => (alloc.nil())
             .append("bool_elim")
