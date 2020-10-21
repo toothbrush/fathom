@@ -168,7 +168,7 @@ pub enum TermData {
 #[derive(Debug, Clone)]
 pub struct TypeField {
     pub doc: Arc<[String]>,
-    pub name: String,
+    pub name: Ranged<String>,
     pub term: Arc<Term>,
 }
 
