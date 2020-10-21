@@ -390,7 +390,7 @@ impl<'me> Context<'me> {
             {
                 let struct_type = match self.items.get(name) {
                     Some(item) => match &item.data {
-                        core::ItemData::StructType(struct_type) => struct_type,
+                        core::ItemData::StructType(struct_type) => struct_type.clone(),
                         _ => {
                             // nice user error, "not a struct type"
                             todo!("asdf")
@@ -404,38 +404,49 @@ impl<'me> Context<'me> {
                 let mut missing_fields = Vec::new();
 
                 // check for duplicate fields
-                let mut fields_seen = BTreeMap::<String, Range<usize>>::new();
+                let mut seen_fields = BTreeMap::new();
                 for term_field in term_fields {
-                    if fields_seen.contains_key(&term_field.name.data) {
+                    if seen_fields.contains_key(&term_field.name.data) {
                         duplicate_fields.push(term_field.name.clone());
                     } else {
-                        fields_seen.insert(term_field.name.data.clone(), term_field.name.range());
+                        seen_fields.insert(term_field.name.data.clone(), term_field);
                     }
                 }
 
                 // Check for missing fields
                 for type_field in &struct_type.fields {
-                    if !fields_seen.contains_key(&type_field.name.data) {
+                    if !seen_fields.contains_key(&type_field.name.data) {
                         missing_fields.push(type_field.name.clone())
                     }
                 }
 
-                // Check for extraneous fields
-                for (seen_field_name, seen_field_range) in fields_seen {
+                // Check for unexpected fields
+                for (seen_field_name, seen_field) in &seen_fields {
                     if !struct_type
                         .fields
                         .iter()
-                        .any(|f| f.name.data == seen_field_name)
+                        .any(|f| f.name.data == *seen_field_name)
                     {
-                        let error_field = Ranged::new(seen_field_range, seen_field_name);
+                        let error_field =
+                            Ranged::new(seen_field.name.range(), seen_field_name.clone());
                         unexpected_fields.push(error_field)
                     }
                 }
 
-                // TODO
-                // check field types
-                // for each in expected
-                //     lookup each in given
+                let mut struct_core_fields = BTreeMap::new();
+                for struct_field in &struct_type.fields {
+                    match seen_fields.get(&struct_field.name.data) {
+                        Some(field) => {
+                            // TODO Might this explode in our faces later?
+                            let expected_field_type = self.eval(&struct_field.term);
+                            let core_term =
+                                self.check_type(file_id, &field.term, &expected_field_type);
+                            struct_core_fields
+                                .insert(struct_field.name.data.clone(), Arc::new(core_term));
+                        }
+                        _ => {}
+                    }
+                }
 
                 let mut has_problems = false;
                 if !duplicate_fields.is_empty() {
@@ -465,7 +476,11 @@ impl<'me> Context<'me> {
                 if has_problems {
                     return core::Term::new(range.clone(), core::TermData::Error);
                 }
-                todo!("return something")
+
+                core::Term::new(
+                    range.clone(),
+                    core::TermData::StructTerm(struct_core_fields),
+                )
             }
             (TermData::If(surface_head, surface_if_true, surface_if_false), _) => {
                 // TODO: Lookup globals in environment
