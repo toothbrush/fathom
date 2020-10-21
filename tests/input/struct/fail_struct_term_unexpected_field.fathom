@@ -1,0 +1,10 @@
+struct Point : Type {
+    x : Int,
+    y : Int,
+}
+
+origin : Point = struct {
+    y = 0,
+    x = 0,
+    z = 0, //~ error: unexpected field
+};

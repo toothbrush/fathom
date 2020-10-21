@@ -1,0 +1,6 @@
+struct Point : Type {
+    x : global Int,
+    y : global Int,
+}
+
+origin = ! : item Point;

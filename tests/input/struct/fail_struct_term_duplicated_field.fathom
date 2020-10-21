@@ -1,0 +1,10 @@
+struct Point : Type {
+    x : Int,
+    y : Int,
+}
+
+origin : Point = struct {
+    x = 0,
+    x = 1, //~ error: duplicate fields
+    y = 0,
+};

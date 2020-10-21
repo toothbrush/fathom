@@ -87,5 +87,8 @@ mod r#struct {
     test!(fail_missing_closing_brace, "struct/fail_missing_closing_brace.fathom");
     test!(fail_missing_fields, "struct/fail_missing_fields.fathom");
     test!(fail_missing_name, "struct/fail_missing_name.fathom");
+    test!(fail_struct_term_duplicated_field, "struct/fail_struct_term_duplicated_field.fathom");
+    test!(fail_struct_term_missing_field, "struct/fail_struct_term_missing_field.fathom");
+    test!(fail_struct_term_unexpected_field, "struct/fail_struct_term_unexpected_field.fathom");
     test!(fail_undefined_field, "struct/fail_undefined_field.fathom");
 }

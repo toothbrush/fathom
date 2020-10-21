@@ -1,0 +1,6 @@
+struct Point : Type {
+    x : Int,
+    y : Int,
+}
+
+origin : Point = struct {y = 0}; //~ error: missing fields

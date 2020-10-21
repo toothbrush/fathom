@@ -17,6 +17,7 @@ use std::sync::Arc;
 use crate::lang::core::semantics::{self, Head, Value};
 use crate::lang::core::{self, Sort};
 use crate::lang::surface::{ItemData, Module, Pattern, PatternData, StructType, Term, TermData};
+use crate::lang::Ranged;
 use crate::literal;
 use crate::pass::core_to_surface;
 use crate::reporting::{Message, SurfaceToCoreMessage};
@@ -383,6 +384,88 @@ impl<'me> Context<'me> {
                 };
 
                 core::Term::new(range, term_data)
+            }
+            (TermData::StructTerm(term_fields), Value::Stuck(Head::Item(name), elims))
+                if elims.is_empty() =>
+            {
+                let struct_type = match self.items.get(name) {
+                    Some(item) => match &item.data {
+                        core::ItemData::StructType(struct_type) => struct_type,
+                        _ => {
+                            // nice user error, "not a struct type"
+                            todo!("asdf")
+                        }
+                    },
+                    None => panic!("This is a bug"),
+                };
+
+                let mut duplicate_fields = Vec::new();
+                let mut unexpected_fields = Vec::new();
+                let mut missing_fields = Vec::new();
+
+                // check for duplicate fields
+                let mut fields_seen = BTreeMap::<String, Range<usize>>::new();
+                for term_field in term_fields {
+                    if fields_seen.contains_key(&term_field.name.data) {
+                        duplicate_fields.push(term_field.name.clone());
+                    } else {
+                        fields_seen.insert(term_field.name.data.clone(), term_field.name.range());
+                    }
+                }
+
+                // Check for missing fields
+                for type_field in &struct_type.fields {
+                    if !fields_seen.contains_key(&type_field.name.data) {
+                        missing_fields.push(type_field.name.clone())
+                    }
+                }
+
+                // Check for extraneous fields
+                for (seen_field_name, seen_field_range) in fields_seen {
+                    if !struct_type
+                        .fields
+                        .iter()
+                        .any(|f| f.name.data == seen_field_name)
+                    {
+                        let error_field = Ranged::new(seen_field_range, seen_field_name);
+                        unexpected_fields.push(error_field)
+                    }
+                }
+
+                // TODO
+                // check field types
+                // for each in expected
+                //     lookup each in given
+
+                let mut has_problems = false;
+                if !duplicate_fields.is_empty() {
+                    has_problems = true;
+                    self.push_message(SurfaceToCoreMessage::DuplicateStructFieldNames {
+                        file_id,
+                        field_names: duplicate_fields,
+                    });
+                }
+                if !missing_fields.is_empty() {
+                    has_problems = true;
+                    self.push_message(SurfaceToCoreMessage::MissingStructFields {
+                        file_id,
+                        struct_term_range: range.clone(),
+                        missing_fields,
+                    })
+                }
+                if !unexpected_fields.is_empty() {
+                    has_problems = true;
+                    self.push_message(SurfaceToCoreMessage::UnexpectedStructFields {
+                        file_id,
+                        struct_term_range: range.clone(),
+                        unexpected_fields,
+                    })
+                }
+
+                if has_problems {
+                    return core::Term::new(range.clone(), core::TermData::Error);
+                }
+                todo!("return something")
             }
             (TermData::If(surface_head, surface_if_true, surface_if_false), _) => {
                 // TODO: Lookup globals in environment

@@ -10,7 +10,7 @@ use codespan_reporting::diagnostic::{Diagnostic, Label};
 use pretty::DocAllocator;
 use std::ops::Range;
 
-use crate::lang::{core, surface};
+use crate::lang::{core, surface, Ranged};
 use crate::literal;
 
 /// Global diagnostic messages
@@ -552,6 +552,20 @@ pub enum SurfaceToCoreMessage {
         file_id: usize,
         pattern_range: Range<usize>,
     },
+    DuplicateStructFieldNames {
+        file_id: usize,
+        field_names: Vec<Ranged<String>>,
+    },
+    MissingStructFields {
+        file_id: usize,
+        struct_term_range: Range<usize>,
+        missing_fields: Vec<Ranged<String>>,
+    },
+    UnexpectedStructFields {
+        file_id: usize,
+        struct_term_range: Range<usize>,
+        unexpected_fields: Vec<Ranged<String>>,
+    },
 }
 
 impl SurfaceToCoreMessage {
@@ -779,6 +793,66 @@ impl SurfaceToCoreMessage {
                 .with_message("unreachable pattern")
                 .with_labels(vec![Label::primary(*file_id, pattern_range.clone())
                     .with_message("unreachable pattern")]),
+            SurfaceToCoreMessage::DuplicateStructFieldNames {
+                file_id,
+                field_names,
+            } => Diagnostic::error()
+                .with_message(format!("duplicate fields found in struct"))
+                .with_labels(
+                    field_names
+                        .iter()
+                        .map(|f| {
+                            Label::primary(*file_id, f.range())
+                                .with_message("duplicate field already specified for struct")
+                        })
+                        .collect(),
+                ),
+            SurfaceToCoreMessage::MissingStructFields {
+                file_id,
+                struct_term_range,
+                missing_fields,
+            } => {
+                use itertools::Itertools;
+                Diagnostic::error()
+                    .with_message(format!("missing fields for struct"))
+                    .with_labels(
+                        std::iter::once(
+                            Label::primary(*file_id, struct_term_range.clone()).with_message(
+                                format!(
+                                    "missing fields {}",
+                                    missing_fields
+                                        .iter()
+                                        .map(|ranged_string| &ranged_string.data)
+                                        .format(", ")
+                                ),
+                            ),
+                        )
+                        .chain(missing_fields.iter().map(|f| {
+                            Label::secondary(*file_id, f.range())
+                                .with_message("field defined on struct here")
+                        }))
+                        .collect(),
+                    )
+            }
+            SurfaceToCoreMessage::UnexpectedStructFields {
+                file_id,
+                struct_term_range,
+                unexpected_fields,
+            } => Diagnostic::error()
+                .with_message(format!("unexpected fields found in struct"))
+                .with_labels(
+                    unexpected_fields
+                        .iter()
+                        .map(|f| {
+                            Label::primary(*file_id, f.range())
+                                .with_message("unexpected field specified for struct")
+                        })
+                        .chain(std::iter::once(
+                            Label::secondary(*file_id, struct_term_range.clone())
+                                .with_message("struct instantiated here"),
+                        ))
+                        .collect(),
+                ),
         }
     }
 }
