@@ -7,5 +7,6 @@ origin : Point = struct {
     x = 0,
     y = 0,
 };
+
 origin_x = origin.x;
-origin_x = origin.y;
+origin_y = origin.y;
