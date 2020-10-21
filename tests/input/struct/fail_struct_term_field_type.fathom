@@ -1,0 +1,9 @@
+struct Point : Type {
+    x : Int,
+    y : Int,
+}
+
+origin : Point = struct {
+    y = 11.1, //~ error: expected a base 10 digit or digit separator
+    x = 0,
+};
