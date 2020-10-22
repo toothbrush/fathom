@@ -143,7 +143,7 @@ pub enum TermData {
     FunctionElim(Arc<Term>, Arc<Term>),
 
     /// Struct terms.
-    StructTerm(Vec<TermField>),
+    StructTerm(BTreeMap<String, Arc<Term>>),
     /// Struct term eliminations (field lookup).
     StructElim(Arc<Term>, String),
 
@@ -170,13 +170,6 @@ pub struct TypeField {
     pub doc: Arc<[String]>,
     pub name: Ranged<String>,
     pub term: Arc<Term>,
-}
-
-/// A field in a struct term.
-#[derive(Debug, Clone)]
-pub struct TermField {
-    pub name: Ranged<String>,
-    pub term: Term,
 }
 
 /// An environment of global definitions.

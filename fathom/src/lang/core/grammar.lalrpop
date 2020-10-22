@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::lang::Ranged;
-use crate::lang::core::{Alias, Constant, ItemData, Module, Sort, StructType, StructFormat, Term, TermData, TermField, TypeField};
+use crate::lang::core::{Alias, Constant, ItemData, Module, Sort, StructType, StructFormat, Term, TermData, TypeField};
 use crate::lang::core::lexer::Token;
 use crate::literal;
 use crate::reporting::{LexerMessage, Message};
@@ -130,7 +130,7 @@ AtomicTermData: TermData = {
     "repr" => TermData::Repr,
     "struct" "{" <mut fields: (<TermField> ",")*> <last: TermField?> "}" => {
         fields.extend(last);
-        TermData::StructTerm(fields)
+        TermData::StructTerm(fields.into_iter().collect()) // NOTE this will ignore duplicates
     },
     <term: AtomicTerm> "." <name: Name> => TermData::StructElim(Arc::new(term), name),
     "bool_elim" <head: Term> "{" <if_true: Term> "," <if_false: Term> "}" => {
@@ -181,8 +181,8 @@ TypeField: TypeField = {
 };
 
 #[inline]
-TermField: TermField = {
-    <name: Ranged<Name>> "=" <term: Term> => TermField { name, term },
+TermField: (String, Arc<Term>) = {
+    <name: Name> "=" <term: Term> => (name, Arc::new(term)),
 };
 
 #[inline]
