@@ -658,7 +658,14 @@ impl<'me> Context<'me> {
                 (core_head, head_type)
             }
 
-            TermData::StructTerm(term_fields) => todo!("struct term"),
+            TermData::StructTerm(_) => {
+                self.push_message(SurfaceToCoreMessage::AmbiguousStructTerm {
+                    file_id,
+                    struct_term_range: surface_term.range(),
+                });
+
+                (error_term(), Arc::new(Value::Error))
+            }
             TermData::StructElim(head, field) => todo!("struct elimination"),
 
             TermData::NumberLiteral(_) => {

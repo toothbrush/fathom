@@ -539,6 +539,10 @@ pub enum SurfaceToCoreMessage {
         file_id: usize,
         literal_range: Range<usize>,
     },
+    AmbiguousStructTerm {
+        file_id: usize,
+        struct_term_range: Range<usize>,
+    },
     UnsupportedPatternType {
         file_id: usize,
         scrutinee_range: Range<usize>,
@@ -756,6 +760,13 @@ impl SurfaceToCoreMessage {
             } => Diagnostic::error()
                 .with_message("ambiguous numeric literal")
                 .with_labels(vec![Label::primary(*file_id, literal_range.clone())
+                    .with_message("type annotation required")]),
+            SurfaceToCoreMessage::AmbiguousStructTerm {
+                file_id,
+                struct_term_range,
+            } => Diagnostic::error()
+                .with_message("ambiguous struct term")
+                .with_labels(vec![Label::primary(*file_id, struct_term_range.clone())
                     .with_message("type annotation required")]),
             SurfaceToCoreMessage::UnsupportedPatternType {
                 file_id,

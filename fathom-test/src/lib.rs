@@ -92,5 +92,6 @@ mod r#struct {
     test!(fail_struct_term_field_type, "struct/fail_struct_term_field_type.fathom");
     test!(fail_struct_term_missing_field, "struct/fail_struct_term_missing_field.fathom");
     test!(fail_struct_term_unexpected_field, "struct/fail_struct_term_unexpected_field.fathom");
+    test!(fail_struct_term_without_annotation, "struct/fail_struct_term_without_annotation.fathom");
     test!(fail_undefined_field, "struct/fail_undefined_field.fathom");
 }
