@@ -75,6 +75,7 @@ mod alias {
 mod r#struct {
     test!(pass_empty, "struct/pass_empty.fathom");
     test!(pass_empty_doc, "struct/pass_empty_doc.fathom");
+    test!(pass_eval_struct_term, "struct/pass_eval_struct_term.fathom");
     test!(pass_pair, "struct/pass_pair.fathom");
     test!(pass_singleton, "struct/pass_singleton.fathom");
     test!(pass_term_and_elim, "struct/pass_term_and_elim.fathom");

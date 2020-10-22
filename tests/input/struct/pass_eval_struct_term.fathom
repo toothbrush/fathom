@@ -1,0 +1,12 @@
+struct Header : Type {
+    count : Int,
+}
+
+header_example : Header = struct {
+    count = 4,
+};
+
+// Ideally we want this to be an Array and a Type, not Format
+Data : Format = FormatArray header_example.count U8;
+
+// data : Data = [0, 1, 2, 3];
