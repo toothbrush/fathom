@@ -87,7 +87,15 @@ pub fn from_term(term: &Term) -> surface::Term {
             vec![from_term(argument)], // TODO: flatten arguments
         ),
 
-        TermData::StructTerm(term_fields) => todo!("struct term"),
+        TermData::StructTerm(term_fields) => surface::TermData::StructTerm(
+            term_fields
+                .iter()
+                .map(|(name, field_term)| surface::TermField {
+                    name: Ranged::from(name.clone()),
+                    term: from_term(field_term),
+                })
+                .collect(),
+        ),
         TermData::StructElim(head, field) => todo!("struct elimination"),
 
         TermData::Constant(constant) => match constant {
