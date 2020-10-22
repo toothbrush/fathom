@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::lang::core::semantics::{self, Value};
+use crate::lang::core::semantics::{self, Head, Value};
 use crate::lang::core::{Constant, Globals, Item, ItemData, Module, Sort, Term, TermData};
 use crate::reporting::{CoreTypingMessage, Message};
 
@@ -189,7 +189,25 @@ impl<'me> Context<'me> {
         match (&term.data, expected_type.as_ref()) {
             (TermData::Error, _) | (_, Value::Error) => {}
 
-            (TermData::StructTerm(term_fields), _) => todo!("struct term"),
+            (TermData::StructTerm(term_fields), Value::Stuck(Head::Item(name), elims))
+                if elims.is_empty() =>
+            {
+                let struct_type = match self.items.get(name) {
+                    Some(item) => match &item.data {
+                        ItemData::StructType(struct_type) => struct_type.clone(),
+                        _ => todo!("error, not a struct type"),
+                    },
+                    None => panic!("This is a bug"),
+                };
+                for struct_field in &struct_type.fields {
+                    let struct_field_type = self.eval(&struct_field.term);
+                    self.check_type(
+                        file_id,
+                        term_fields.get(&struct_field.name.data).unwrap(),
+                        &struct_field_type,
+                    );
+                }
+            }
 
             (TermData::BoolElim(term, if_true, if_false), _) => {
                 let bool_type = Arc::new(Value::global("Bool"));
