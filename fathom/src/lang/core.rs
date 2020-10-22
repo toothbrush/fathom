@@ -46,11 +46,19 @@ impl Module {
     }
 }
 
+impl PartialEq for Module {
+    /// Our implementation of [`PartialEq::eq`] ignores the file_id of
+    /// the Module and just compares the data.
+    fn eq(&self, other: &Module) -> bool {
+        self.doc == other.doc && self.items == other.items
+    }
+}
+
 /// Items in the core language.
 pub type Item = Ranged<ItemData>;
 
 /// Items in a module.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ItemData {
     /// Alias definitions
     Alias(Alias),
@@ -61,7 +69,7 @@ pub enum ItemData {
 }
 
 /// An alias definition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Alias {
     /// Doc comment.
     pub doc: Arc<[String]>,
@@ -72,7 +80,7 @@ pub struct Alias {
 }
 
 /// A struct type definition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct StructType {
     /// Doc comment.
     pub doc: Arc<[String]>,
@@ -83,7 +91,7 @@ pub struct StructType {
 }
 
 /// A struct format definition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct StructFormat {
     /// Doc comment.
     pub doc: Arc<[String]>,
@@ -125,7 +133,7 @@ impl PartialEq for Constant {
 pub type Term = Ranged<TermData>;
 
 /// Terms.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TermData {
     /// Global variables.
     Global(String),
@@ -165,7 +173,7 @@ pub enum TermData {
 }
 
 /// A field in a struct type definition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TypeField {
     pub doc: Arc<[String]>,
     pub name: Ranged<String>,

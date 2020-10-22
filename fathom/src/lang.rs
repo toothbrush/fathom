@@ -15,6 +15,14 @@ pub struct Ranged<Data> {
     pub data: Data,
 }
 
+impl<Data: PartialEq> PartialEq for Ranged<Data> {
+    /// Our implementation of [`PartialEq::eq`] ignores the range info
+    /// and just compares the data.
+    fn eq(&self, other: &Ranged<Data>) -> bool {
+        self.data == other.data
+    }
+}
+
 impl<Data> Ranged<Data> {
     pub fn new(range: Range<usize>, data: Data) -> Ranged<Data> {
         Ranged { range, data }
