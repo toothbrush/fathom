@@ -582,6 +582,7 @@ impl<'me> Context<'me> {
                 });
                 (error_term(), Arc::new(Value::Error))
             }
+
             TermData::Ann(surface_term, surface_type) => {
                 let (core_type, _) = self.is_type(file_id, surface_type);
                 match &core_type.data {
@@ -605,6 +606,7 @@ impl<'me> Context<'me> {
                 });
                 (error_term(), Arc::new(Value::Error))
             }
+
             TermData::TypeType => (
                 core::Term::new(range, core::TermData::Sort(Sort::Type)),
                 Arc::new(Value::Sort(Sort::Kind)),
@@ -628,6 +630,7 @@ impl<'me> Context<'me> {
                     (_, _) => (error_term(), Arc::new(Value::Error)),
                 }
             }
+
             TermData::FunctionElim(head, arguments) => {
                 let (mut core_head, mut head_type) = self.synth_type(file_id, head);
 
@@ -666,6 +669,7 @@ impl<'me> Context<'me> {
 
                 (error_term(), Arc::new(Value::Error))
             }
+
             TermData::StructElim(head, field) => todo!("struct elimination"),
 
             TermData::NumberLiteral(_) => {
@@ -676,6 +680,7 @@ impl<'me> Context<'me> {
 
                 (error_term(), Arc::new(Value::Error))
             }
+
             TermData::If(surface_head, surface_if_true, surface_if_false) => {
                 // TODO: Lookup globals in environment
                 let bool_type = Arc::new(Value::global("Bool"));
@@ -702,6 +707,7 @@ impl<'me> Context<'me> {
                     (error_term(), Arc::new(Value::Error))
                 }
             }
+
             TermData::Match(_, _) => {
                 self.push_message(SurfaceToCoreMessage::AmbiguousMatchExpression {
                     file_id,
