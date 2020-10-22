@@ -1,3 +1,6 @@
+use std::collections::BTreeMap;
+use std::sync::Arc;
+
 use crate::lang::core::{
     Alias, Constant, Item, ItemData, Module, Sort, StructFormat, StructType, Term, TermData,
     TypeField,
@@ -71,6 +74,37 @@ where
                 .append(";")
                 .nest(4),
         )
+}
+
+pub fn from_struct_term<'a, D>(
+    alloc: &'a D,
+    term_fields: &'a BTreeMap<String, Arc<Term>>,
+) -> DocBuilder<'a, D>
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
+    let struct_prefix = (alloc.nil()).append("struct").append(alloc.space());
+
+    if term_fields.is_empty() {
+        (alloc.nil()).append(struct_prefix).append("{}").group()
+    } else {
+        (alloc.nil())
+            .append(struct_prefix)
+            .append("{")
+            .group()
+            .append(
+                alloc.concat(term_fields.iter().map(|(field_name, field_term)| {
+                    (alloc.nil())
+                        .append(alloc.hardline())
+                        .append(from_term_field(alloc, field_name, field_term))
+                        .nest(4)
+                        .group()
+                })),
+            )
+            .append(alloc.hardline())
+            .append("}")
+    }
 }
 
 pub fn from_struct_type<'a, D>(alloc: &'a D, struct_type: &'a StructType) -> DocBuilder<'a, D>
@@ -155,6 +189,31 @@ where
     };
 
     (alloc.nil()).append(docs).append(struct_format)
+}
+
+pub fn from_term_field<'a, D>(
+    alloc: &'a D,
+    field_name: &'a str,
+    field_term: &'a Arc<Term>,
+) -> DocBuilder<'a, D>
+where
+    D: DocAllocator<'a>,
+    D::Doc: Clone,
+{
+    (alloc.nil())
+        .append(
+            (alloc.nil())
+                .append(alloc.as_string(&field_name))
+                .append(alloc.space())
+                .append("=")
+                .group(),
+        )
+        .append(
+            (alloc.nil())
+                .append(alloc.space())
+                .append(from_term_prec(alloc, &field_term, Prec::Term))
+                .append(","),
+        )
 }
 
 pub fn from_ty_field<'a, D>(alloc: &'a D, ty_field: &'a TypeField) -> DocBuilder<'a, D>
@@ -282,7 +341,7 @@ where
                 ),
         ),
 
-        TermData::StructTerm(term_fields) => todo!("struct term"),
+        TermData::StructTerm(term_fields) => from_struct_term(alloc, term_fields),
         TermData::StructElim(head, field) => todo!("struct elimination"),
 
         TermData::Constant(constant) => from_constant(alloc, constant),
