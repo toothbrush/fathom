@@ -312,7 +312,33 @@ impl<'me> Context<'me> {
             }
 
             TermData::StructTerm(term_fields) => todo!("struct term"),
-            TermData::StructElim(head, field) => todo!("struct elimination"),
+            TermData::StructElim(head, field_name) => {
+                let struct_type = self.synth_type(file_id, head);
+                let item_name = match struct_type.as_ref() {
+                    Value::Stuck(Head::Item(name), elims) if elims.is_empty() => name,
+                    Value::Error => return Arc::new(Value::Error),
+                    _ => todo!("give some sort of new error"),
+                };
+                let struct_type = match self.items.get(item_name) {
+                    Some(item) => match &item.data {
+                        ItemData::StructType(struct_type) => struct_type.clone(),
+                        _ => {
+                            // another nice user error, "not a struct type".
+                            todo!("asf")
+                        }
+                    },
+                    None => todo!("sadfl"),
+                };
+                match struct_type
+                    .fields
+                    .iter()
+                    .find(|f| f.name.data == *field_name)
+                {
+                    ///// Ctx |- eval(field-type, field-type')
+                    Some(field_type) => self.eval(&field_type.term),
+                    None => todo!("struct type .. doesn't have field .."),
+                }
+            }
 
             TermData::Constant(constant) => match constant {
                 // TODO: Lookup globals in environment

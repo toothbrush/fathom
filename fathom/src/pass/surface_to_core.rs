@@ -670,7 +670,44 @@ impl<'me> Context<'me> {
                 (error_term(), Arc::new(Value::Error))
             }
 
-            TermData::StructElim(head, field) => todo!("struct elimination"),
+            TermData::StructElim(head, field_name) => {
+                ///// Ctx |- synth-type(surface-head, item name, core-head)
+                let (head_term, head_type) = self.synth_type(file_id, head);
+                let item_name = match head_type.as_ref() {
+                    Value::Stuck(Head::Item(name), elims) if elims.is_empty() => name,
+                    Value::Error => return (error_term(), Arc::new(Value::Error)),
+                    _ => todo!("give some sort of new error"),
+                };
+                ///// Ctx |- lookup-item(name, struct { .., label : field-type, .. })
+                let struct_type = match self.items.get(item_name) {
+                    Some(item) => match &item.data {
+                        core::ItemData::StructType(struct_type) => struct_type.clone(),
+                        _ => {
+                            // another nice user error, "not a struct type".
+                            todo!("asf")
+                        }
+                    },
+                    None => todo!("sadfl"),
+                };
+                let field_type = match struct_type
+                    .fields
+                    .iter()
+                    .find(|f| f.name.data == field_name.data)
+                {
+                    ///// Ctx |- eval(field-type, field-type')
+                    Some(field_type) => self.eval(&field_type.term),
+                    None => todo!("struct type .. doesn't have field .."),
+                };
+                ///// -------------------------------------------------------------
+                ///// Ctx |- synth-type(surface-head.label, field-type', core-head.label)
+                (
+                    core::Term::new(
+                        range,
+                        core::TermData::StructElim(Arc::new(head_term), field_name.data.clone()),
+                    ),
+                    field_type,
+                )
+            }
 
             TermData::NumberLiteral(_) => {
                 self.push_message(SurfaceToCoreMessage::AmbiguousNumericLiteral {

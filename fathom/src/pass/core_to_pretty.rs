@@ -342,7 +342,11 @@ where
         ),
 
         TermData::StructTerm(term_fields) => from_struct_term(alloc, term_fields),
-        TermData::StructElim(head, field) => todo!("struct elimination"),
+        TermData::StructElim(head, field) => {
+            paren(alloc, true, (alloc.nil()).append(from_term(alloc, head)))
+                .append(".")
+                .append(alloc.as_string(field))
+        }
 
         TermData::Constant(constant) => from_constant(alloc, constant),
         TermData::BoolElim(head, if_true, if_false) => (alloc.nil())

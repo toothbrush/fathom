@@ -96,7 +96,9 @@ pub fn from_term(term: &Term) -> surface::Term {
                 })
                 .collect(),
         ),
-        TermData::StructElim(head, field) => todo!("struct elimination"),
+        TermData::StructElim(head, field) => {
+            surface::TermData::StructElim(Box::new(from_term(head)), Ranged::from(field.clone()))
+        }
 
         TermData::Constant(constant) => match constant {
             Constant::Int(value) => surface::TermData::NumberLiteral(value.to_string()),
